@@ -1,0 +1,11 @@
+repos:
+ - repo: https://github.com/golangci/golangci-linters
+   rev: v1.60.1
+   hooks: 
+    - id: golangci-lint
+ - repo: https://github.com/dnephin/pre-commit-golangci
+   rev: v0.5.0
+   hooks:
+     - id: go-fmt
+     - id: go-vet
+     - id: go-test

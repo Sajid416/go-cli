@@ -1,0 +1,19 @@
+name: ci
+on: 
+    pull_request:
+        branches: [main]
+
+jobs:
+    lint_add_test:
+        runs-on: windows-latest
+
+        steps:
+         - uses: actions/checkout@v4
+         - uses: actions/setup-go@v5
+           with:
+            go-version: 1.25.1
+         - run: go mod tidy
+         - run: make lint
+           shell: bash
+         - run: make test
+           shell: bash
