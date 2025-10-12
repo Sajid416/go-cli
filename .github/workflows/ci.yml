@@ -1,19 +1,56 @@
 name: ci
-on: 
-    pull_request:
-        branches: [main]
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-    lint_add_test:
-        runs-on: windows-latest
+  test_lint:
+    runs-on: windows-latest
 
-        steps:
-         - uses: actions/checkout@v4
-         - uses: actions/setup-go@v5
-           with:
-            go-version: 1.25.1
-         - run: go mod tidy
-         - run: make lint
-           shell: bash
-         - run: make test
-           shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25.1'
+          check-latest: true
+
+      # Cache Go modules and build cache (works in bash on Windows)
+      - name: Cache Go build & mod
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
+      - name: Go tidy
+        shell: bash
+        run: go mod tidy
+
+      - name: Install golangci-lint
+        shell: bash
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+      # Run the linter directly (avoid 'make' on Windows)
+      - name: Lint
+        shell: bash
+        run: golangci-lint run
+
+      # IMPORTANT: use bash and target explicit package globs to avoid ".out" parsing issues
+      - name: Test (race + coverage)
+        shell: bash
+        run: |
+          set -euo pipefail
+          go test -race -coverprofile=coverage.out ./cmd/... ./pkg/...
+          go tool cover -func=coverage.out
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.out

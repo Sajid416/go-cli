@@ -6,3 +6,6 @@ linters:
     - govet
     - errcheck
     - staticcheck
+
+issues:
+  exclude-use-default: false
