@@ -1,19 +1,47 @@
 name: ci
-on: 
-    pull_request:
-        branches: [main]
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-    lint_add_test:
-        runs-on: windows-latest
+  test_lint:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
 
-        steps:
-         - uses: actions/checkout@v4
-         - uses: actions/setup-go@v5
-           with:
-            go-version: 1.25.1
-         - run: go mod tidy
-         - run: make lint
-           shell: bash
-         - run: make test
-           shell: bash
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          check-latest: true
+
+      - name: Cache Go build & mod
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-
+
+      - name: Go tidy
+        run: go mod tidy
+
+      - name: Install golangci-lint
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+
+      - name: Lint
+        run: make lint
+
+      - name: Test (race + coverage)
+        run: |
+          go test -race -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.out
