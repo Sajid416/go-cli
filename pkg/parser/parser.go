@@ -31,6 +31,7 @@ type Parser interface {
 // ---------- CSV implementation ----------
 type CSVParser struct{}
 
+// this is test branch
 func (CSVParser) Name() string { return "csv" }
 
 func (CSVParser) Parse(b []byte) (RecordSet, error) {
