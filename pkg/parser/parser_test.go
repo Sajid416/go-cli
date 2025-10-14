@@ -41,8 +41,8 @@ func TestJSONParser_Table(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   string
-		wantLen int
-		wantErr error // this is parser from parsing
+		wantLen int // this is in feature2
+		wantErr error
 	}{
 		{"empty", "", 0, ErrEmptyInput},
 		{"array", `[{"a":"1"},{"a":"2","b":3}]`, 2, nil},
