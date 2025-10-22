@@ -42,7 +42,7 @@ func TestJSONParser_Table(t *testing.T) {
 		name    string
 		input   string
 		wantLen int
-		wantErr error // this is parser from parsing
+		wantErr error // this is in feature1 branch
 	}{
 		{"empty", "", 0, ErrEmptyInput},
 		{"array", `[{"a":"1"},{"a":"2","b":3}]`, 2, nil},
